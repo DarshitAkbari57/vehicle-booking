@@ -1,14 +1,56 @@
+const { Op } = require('sequelize');
 const db = require('../models'); // Assuming the models are in the models folder
 
 // Add a new booking
 exports.addBooking = async (bookingData) => {
     try {
+        const { vehicleModelId, startDate, endDate } = bookingData;
+
+        // Check for overlapping bookings
+        const overlappingBooking = await db.Booking.findOne({
+            where: {
+                vehicleModelId,
+                [Op.or]: [
+                    {
+                        startDate: {
+                            [Op.between]: [startDate, endDate],
+                        },
+                    },
+                    {
+                        endDate: {
+                            [Op.between]: [startDate, endDate],
+                        },
+                    },
+                    {
+                        [Op.and]: [
+                            {
+                                startDate: {
+                                    [Op.lte]: startDate,
+                                },
+                            },
+                            {
+                                endDate: {
+                                    [Op.gte]: endDate,
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        if (overlappingBooking) {
+            throw new Error("The selected vehicle is already booked for the specified date range.");
+        }
+
+        // Create booking if no overlap
         const booking = await db.Booking.create(bookingData);
         return booking;
     } catch (error) {
         throw new Error("Failed to add booking: " + error.message);
     }
 };
+
 
 // Get all bookings
 exports.getAllBookings = async () => {
