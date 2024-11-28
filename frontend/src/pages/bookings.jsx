@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableHead,
@@ -8,35 +8,39 @@ import {
   Paper,
 } from "@mui/material";
 import { FaCar, FaMotorcycle, FaTruck } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { GetBooking } from "../redux/booking/action";
+import useSelection from "antd/es/table/hooks/useSelection";
 
-const bookingsData = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    typeOfVehicle: "Car",
-    specificModel: "Model S",
-    date: "2024-12-01 to 2024-12-05",
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    typeOfVehicle: "Motorbike",
-    specificModel: "Model A",
-    date: "2024-12-10 to 2024-12-15",
-  },
-  {
-    id: 3,
-    firstName: "Alice",
-    lastName: "Johnson",
-    typeOfVehicle: "Truck",
-    specificModel: "Model L",
-    date: "2024-12-20 to 2024-12-25",
-  },
-];
+// const bookingsData = [
+//   {
+//     id: 1,
+//     firstName: "John",
+//     lastName: "Doe",
+//     typeOfVehicle: "Car",
+//     specificModel: "Model S",
+//     date: "2024-12-01 to 2024-12-05",
+//   },
+//   {
+//     id: 2,
+//     firstName: "Jane",
+//     lastName: "Smith",
+//     typeOfVehicle: "Motorbike",
+//     specificModel: "Model A",
+//     date: "2024-12-10 to 2024-12-15",
+//   },
+//   {
+//     id: 3,
+//     firstName: "Alice",
+//     lastName: "Johnson",
+//     typeOfVehicle: "Truck",
+//     specificModel: "Model L",
+//     date: "2024-12-20 to 2024-12-25",
+//   },
+// ];
 
 // Function to render appropriate icon based on vehicle type
+
 const getVehicleIcon = (type) => {
   switch (type) {
     case "Car":
@@ -51,6 +55,13 @@ const getVehicleIcon = (type) => {
 };
 
 const Bookings = () => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(GetBooking());
+  }, []);
+
+  const bookingsData =
+    useSelector((state) => state?.booking?.bookings?.bookings) || [];
   return (
     <div className="p-8 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 min-h-screen">
       <Paper className="p-6 shadow-lg rounded-md">
@@ -70,24 +81,27 @@ const Bookings = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {bookingsData.map((booking) => (
-                <TableRow
-                  key={booking.id}
-                  className="hover:!bg-blue-50 transition duration-300"
-                >
-                  <TableCell>{booking.id}</TableCell>
-                  <TableCell>{booking.firstName}</TableCell>
-                  <TableCell>{booking.lastName}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      {getVehicleIcon(booking.typeOfVehicle)}
-                      <span>{booking.typeOfVehicle}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{booking.specificModel}</TableCell>
-                  <TableCell>{booking.date}</TableCell>
-                </TableRow>
-              ))}
+              {bookingsData.map((booking) => {
+                return (
+                  <TableRow
+                    key={booking.id}
+                    className="hover:!bg-blue-50 transition duration-300"
+                  >
+                    <TableCell>{booking.id || "-"}</TableCell>
+                    <TableCell>{booking.firstName || "-"}</TableCell>
+                    <TableCell>{booking.lastName || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <span>{booking?.vehicleType?.type || "-"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{booking?.vehicleModel?.name || "-"}</TableCell>
+                    <TableCell>
+                      {booking.startDate} - {booking.endDate}{" "}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

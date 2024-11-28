@@ -1,37 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, DatePicker, Button, message } from "antd";
 import { Radio, RadioGroup, FormControlLabel } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaCar, FaCalendarAlt, FaMotorcycle } from "react-icons/fa";
+import { GetTypeByWheels } from "../redux/vehicleType/action";
+import { useDispatch, useSelector } from "react-redux";
+import { GetModelsByType } from "../redux/vehicleModels/action";
+import { createBooking } from "../redux/booking/action";
 
 const { RangePicker } = DatePicker;
 
 const DynamicVehicleForm = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     numberOfVehicles: null,
-    vehicleType: null,
-    specificModel: null,
+    vehicleTypeId: null,
+    vehicleModelId: null,
     dateRange: null,
   });
 
-  const navigate = useNavigate();
-
-  const vehicleTypes = {
-    2: ["Motorbike", "Scooter"],
-    4: ["Car", "Truck"],
-  };
-
-  const vehicleModels = {
-    Motorbike: ["Model A", "Model B"],
-    Scooter: ["Model X", "Model Y"],
-    Car: ["Model S", "Model T"],
-    Truck: ["Model L", "Model M"],
-  };
+  const [vehicleTypes, setVehicleTypes] = useState({
+    2: [],
+    4: [],
+  });
+  const type = useSelector((state) => state?.type?.type);
+  const model = useSelector((state) => state?.model?.model);
 
   const steps = [
     {
@@ -96,20 +95,20 @@ const DynamicVehicleForm = () => {
       icon: <FaCar size={24} />,
       content: (
         <Form.Item
-          name="vehicleType"
+          name="vehicleTypeId"
           rules={[{ required: true, message: "Please select a vehicle type!" }]}
         >
           <RadioGroup
             row
-            value={formData.vehicleType}
-            onChange={(e) => handleInputChange("vehicleType", e.target.value)}
+            value={formData.vehicleTypeId}
+            onChange={(e) => handleInputChange("vehicleTypeId", e.target.value)}
           >
             {vehicleTypes[formData.numberOfVehicles]?.map((type) => (
               <FormControlLabel
-                key={type}
-                value={type}
+                key={type?.id}
+                value={type?.id}
                 control={<Radio />}
-                label={type}
+                label={type?.type}
               />
             ))}
           </RadioGroup>
@@ -121,7 +120,7 @@ const DynamicVehicleForm = () => {
       icon: <FaCar size={24} />,
       content: (
         <Form.Item
-          name="specificModel"
+          name="vehicleModelId"
           rules={[
             { required: true, message: "Please select a specific model!" },
           ]}
@@ -129,16 +128,20 @@ const DynamicVehicleForm = () => {
           <RadioGroup
             row
             value={formData.specificModel}
-            onChange={(e) => handleInputChange("specificModel", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("vehicleModelId", e.target.value)
+            }
           >
-            {vehicleModels[formData.vehicleType]?.map((model) => (
-              <FormControlLabel
-                key={model}
-                value={model}
-                control={<Radio />}
-                label={model}
-              />
-            ))}
+            {model?.map((e, index) => {
+              return (
+                <FormControlLabel
+                  key={e?.id}
+                  value={e?.id}
+                  control={<Radio />}
+                  label={e?.name}
+                />
+              );
+            })}
           </RadioGroup>
         </Form.Item>
       ),
@@ -166,9 +169,40 @@ const DynamicVehicleForm = () => {
     },
   ];
 
+  // const handleInputChange = (key, value) => {
+  //   setFormData({ ...formData, [key]: value });
+  // };
   const handleInputChange = (key, value) => {
-    setFormData({ ...formData, [key]: value });
+    console.log("key,value :>> ", key, value);
+    setFormData((prevState) => {
+      const updatedData = { ...prevState, [key]: value };
+
+      // If the number of wheels is changed, trigger the API call
+      if (key === "numberOfVehicles") {
+        dispatch(GetTypeByWheels(Number(value))); // Dispatch the API with the selected value
+      }
+
+      if (key === "vehicleType") {
+        dispatch(GetModelsByType(Number(value))); // Dispatch the API with the selected value
+      }
+
+      return updatedData;
+    });
   };
+
+  useEffect(() => {
+    if (type?.vehicleTypes?.length) {
+      // Update the vehicleTypes state based on the API response
+      const vehicleData = type?.vehicleTypes?.filter(
+        (vehicle) => vehicle?.wheels === 2 || vehicle.wheels === 4
+      );
+      const newVehicleTypes = {
+        2: vehicleData?.filter((vehicle) => vehicle.wheels === 2),
+        4: vehicleData?.filter((vehicle) => vehicle.wheels === 4),
+      };
+      setVehicleTypes(newVehicleTypes);
+    }
+  }, [type]);
 
   const handleNext = () => {
     form
@@ -185,20 +219,35 @@ const DynamicVehicleForm = () => {
       });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     form
       .validateFields()
-      .then(() => {
+      .then(async () => {
         console.log("Form submitted:", formData);
-        message.success("Form submitted successfully!");
-        navigate("/booking"); // Redirect to booking page
-        form.resetFields(); // Reset the form
-        setCurrentStep(0); // Restart from the first question
+        const obj = {
+          firstName: formData?.firstName,
+          lastName: formData?.lastName,
+          vehicleTypeId: formData?.vehicleTypeId,
+          vehicleModelId: formData?.vehicleModelId,
+          startDate: formData?.dateRange?.[0],
+          endDate: formData?.dateRange?.[1],
+        };
+        const response = await dispatch(createBooking(obj));
+
+        form.resetFields();
+        setCurrentStep(0);
+        if (response?.status === 201) {
+          navigate("/booking");
+        }
       })
       .catch(() => {
         message.error("Please complete all required fields!");
       });
   };
+
+  useEffect(() => {
+    dispatch(GetModelsByType(2));
+  }, [dispatch]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">

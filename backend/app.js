@@ -4,12 +4,11 @@ let cors = require("cors");
 const app = express();
 const db = require("./models"); // Sequelize models
 const userRoutes = require("./Router/user");
-const vehicleTypeRoutes = require('./Router/vehicleType');
-const vehicleModelRoutes = require('./Router/vehicleModel');
-const bookingModelRoutes = require('./Router/booking');
+const vehicleTypeRoutes = require("./Router/vehicleType");
+const vehicleModelRoutes = require("./Router/vehicleModel");
+const bookingModelRoutes = require("./Router/booking");
 
-
-app.use(cors('*'));
+app.use(cors("*"));
 require("dotenv").config();
 
 let port = process.env.PORT ? process.env.PORT : 3000; // set the port
@@ -21,8 +20,8 @@ app.use(bodyParser.json({ limit: "512mb" }));
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/vehicle-type", vehicleTypeRoutes);
-app.use('/api/vehiclemodels', vehicleModelRoutes);
-app.use('/api/booking', bookingModelRoutes);
+app.use("/api/vehiclemodels", vehicleModelRoutes);
+app.use("/api/booking", bookingModelRoutes);
 
 // Sync Database
 db.sequelize
