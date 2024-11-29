@@ -208,7 +208,6 @@ const DynamicVehicleForm = () => {
     form
       .validateFields()
       .then(async () => {
-        console.log("Form submitted:", formData);
         const obj = {
           firstName: formData?.firstName,
           lastName: formData?.lastName,
@@ -220,9 +219,11 @@ const DynamicVehicleForm = () => {
         const response = await dispatch(createBooking(obj));
 
         form.resetFields();
-        if (response?.status === 201) {
-          setCurrentStep(0);
-          navigate("/booking");
+        if (response?.status === 200) {
+          if (response?.data?.success) {
+            setCurrentStep(0);
+            navigate("/booking");
+          }
         }
       })
       .catch(() => {

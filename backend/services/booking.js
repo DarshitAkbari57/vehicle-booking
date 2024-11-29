@@ -40,16 +40,14 @@ exports.addBooking = async (bookingData) => {
     });
 
     if (overlappingBooking) {
-      throw new Error(
-        "The selected vehicle is already booked for the specified date range."
-      );
+      throw new Error("Vehicle already booked for the selected dates.");
     }
 
     // Create booking if no overlap
     const booking = await db.Booking.create(bookingData);
     return booking;
   } catch (error) {
-    throw new Error("Failed to add booking: " + error.message);
+    throw new Error(error.message);
   }
 };
 

@@ -10,12 +10,16 @@ export const createBooking = (payload, dispatch) => {
 
     try {
       const response = await apiPost("booking", payload);
-      if (response.status === 201) {
+      if (response.status === 200) {
         dispatch({
           type: actionTypes.ADD_BOOKING_SUCCESS,
           payload: response.data,
         });
-        generatePopup("success", response?.data?.message);
+        if (response?.data?.success) {
+          generatePopup("success", response?.data?.message);
+        } else {
+          generatePopup("error", response?.data?.message);
+        }
       } else {
         dispatch({
           type: actionTypes.ADD_BOOKING_FAIL,
