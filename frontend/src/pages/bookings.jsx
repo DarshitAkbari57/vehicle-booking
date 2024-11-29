@@ -10,7 +10,7 @@ import {
 import { FaCar, FaMotorcycle, FaTruck } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { GetBooking } from "../redux/booking/action";
-import useSelection from "antd/es/table/hooks/useSelection";
+import dayjs from "dayjs";
 
 // const bookingsData = [
 //   {
@@ -77,7 +77,8 @@ const Bookings = () => {
                 <TableCell className="!font-bold">Last Name</TableCell>
                 <TableCell className="!font-bold">Type of Vehicle</TableCell>
                 <TableCell className="!font-bold">Specific Model</TableCell>
-                <TableCell className="!font-bold">Date</TableCell>
+                <TableCell className="!font-bold">Booking Date Range</TableCell>
+                <TableCell className="!font-bold">Created At</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -98,6 +99,9 @@ const Bookings = () => {
                     <TableCell>{booking?.vehicleModel?.name || "-"}</TableCell>
                     <TableCell>
                       {booking.startDate} - {booking.endDate}{" "}
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(booking.createdAt).format("YYYY-MM-DD")}
                     </TableCell>
                   </TableRow>
                 );
