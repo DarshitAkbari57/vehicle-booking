@@ -169,30 +169,15 @@ const DynamicVehicleForm = () => {
     },
   ];
 
-  // const handleInputChange = (key, value) => {
-  //   setFormData({ ...formData, [key]: value });
-  // };
   const handleInputChange = (key, value) => {
-    console.log("key,value :>> ", key, value);
     setFormData((prevState) => {
       const updatedData = { ...prevState, [key]: value };
-
-      // If the number of wheels is changed, trigger the API call
-      if (key === "numberOfVehicles") {
-        dispatch(GetTypeByWheels(Number(value))); // Dispatch the API with the selected value
-      }
-
-      if (key === "vehicleType") {
-        dispatch(GetModelsByType(Number(value))); // Dispatch the API with the selected value
-      }
-
       return updatedData;
     });
   };
 
   useEffect(() => {
     if (type?.vehicleTypes?.length) {
-      // Update the vehicleTypes state based on the API response
       const vehicleData = type?.vehicleTypes?.filter(
         (vehicle) => vehicle?.wheels === 2 || vehicle.wheels === 4
       );
@@ -246,8 +231,14 @@ const DynamicVehicleForm = () => {
   };
 
   useEffect(() => {
-    dispatch(GetModelsByType(2));
-  }, [dispatch]);
+    if (currentStep === 2) {
+      dispatch(GetTypeByWheels(Number(formData?.numberOfVehicles)));
+    }
+
+    if (currentStep === 3) {
+      dispatch(GetModelsByType(Number(formData?.vehicleTypeId))); // Dispatch the API with the selected value
+    }
+  }, [currentStep]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">
