@@ -235,8 +235,8 @@ const DynamicVehicleForm = () => {
         const response = await dispatch(createBooking(obj));
 
         form.resetFields();
-        setCurrentStep(0);
         if (response?.status === 201) {
+          setCurrentStep(0);
           navigate("/booking");
         }
       })
