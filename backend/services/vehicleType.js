@@ -65,7 +65,7 @@ class VehicleTypeService {
         try {
             const response = await db.VehicleTypes.findAll({
                 where: {
-                    wheels // Matching the wheels values
+                    wheels
                 },
             });
             return JSON.parse(JSON.stringify(response));

@@ -79,24 +79,18 @@ exports.deleteVehicleType = async (req, res) => {
 // Get Vehicle Types by Wheels
 exports.getVehicleTypesByWheels = async (req, res) => {
     try {
-        // Get the `wheels` values from query parameters (comma separated)
         const { wheels } = req.query;
 
-        // If wheels parameter is not provided or is empty, return an error
         if (!wheels) {
             return res.status(400).json({ error: "Wheels query parameter is required." });
         }
-
-        // Fetch vehicle types matching the given wheel values
         const vehicleTypes = await vehicleTypeService.getVehicleTypesByWheels(wheels);
 
-        // If no matching vehicle types found
         if (vehicleTypes.length === 0) {
             return res.status(404).json({ message: "No vehicle types found for the given wheel values." });
         }
 
-        // Return the matched vehicle types
-        res.status(200).json({ message: "Vehicle Types fetched successfully", vehicleTypes });
+        return res.status(200).json({ message: "Vehicle Types fetched successfully", vehicleTypes });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to fetch vehicle types by wheels", details: error.message });
